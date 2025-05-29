@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python MIDI Melody Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">🎵 MIDI Generator</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#melody-section">Melody</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#chord-section">Chords</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-12">
+                <h1 class="text-center mb-4">🎵 MIDI Melody Generator</h1>
+                <p class="text-center">Generate beautiful melodies and chord progressions directly in your browser!</p>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Melody Generation Section -->
+            <div class="col-md-6" id="melody-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Melody Generation</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="melody-form">
+                            <div class="mb-3">
+                                <label for="root_note" class="form-label">Root Note</label>
+                                <select class="form-select" id="root_note" name="root_note" required>
+                                    {% for note in notes %}
+                                    <option value="{{ note }}">{{ note }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="mode" class="form-label">Scale Mode</label>
+                                <select class="form-select" id="mode" name="mode" required>
+                                    {% for scale in scales %}
+                                    <option value="{{ scale }}">{{ scale|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="rhythm_pattern" class="form-label">Rhythm Pattern</label>
+                                <select class="form-select" id="rhythm_pattern" name="rhythm_pattern" required>
+                                    {% for pattern in rhythm_patterns %}
+                                    <option value="{{ pattern }}">{{ pattern|replace('_', ' ')|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="bpm" class="form-label">Tempo (BPM)</label>
+                                <input type="number" class="form-control" id="bpm" name="bpm" min="60" max="180" value="120" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="bars" class="form-label">Number of Bars</label>
+                                <input type="number" class="form-control" id="bars" name="bars" min="1" max="8" value="4" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="use_swing" name="use_swing">
+                                    <label class="form-check-label" for="use_swing">Add Swing Feel</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 swing-options" style="display: none;">
+                                <label for="swing_type" class="form-label">Swing Amount</label>
+                                <select class="form-select" id="swing_type" name="swing_type">
+                                    <option value="light">Light</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="heavy">Heavy</option>
+                                    <option value="extreme">Extreme</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="use_humanization" name="use_humanization">
+                                    <label class="form-check-label" for="use_humanization">Add Humanization</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 humanization-options" style="display: none;">
+                                <label for="humanization_amount" class="form-label">Humanization Amount</label>
+                                <input type="range" class="form-range" id="humanization_amount" name="humanization_amount" 
+                                       min="0.1" max="0.5" step="0.1" value="0.2">
+                                <div class="text-center" id="humanization_value">0.2</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Generate Melody</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chord Progression Section -->
+            <div class="col-md-6" id="chord-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Chord Progression</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="chord-form">
+                            <div class="mb-3">
+                                <label for="chord_root_note" class="form-label">Root Note</label>
+                                <select class="form-select" id="chord_root_note" name="root_note" required>
+                                    {% for note in notes %}
+                                    <option value="{{ note }}">{{ note }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="progression_type" class="form-label">Progression Type</label>
+                                <select class="form-select" id="progression_type" name="progression_type" required>
+                                    {% for prog in chord_progressions %}
+                                    <option value="{{ prog }}">{{ prog|replace('_', ' ')|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="chord_bpm" class="form-label">Tempo (BPM)</label>
+                                <input type="number" class="form-control" id="chord_bpm" name="bpm" min="60" max="180" value="120" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="total_bars" class="form-label">Total Bars</label>
+                                <input type="number" class="form-control" id="total_bars" name="total_bars" min="1" max="32" value="4" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="octave" class="form-label">Octave</label>
+                                <select class="form-select" id="octave" name="octave" required>
+                                    <option value="1">Low (2)</option>
+                                    <option value="2" selected>Medium (3)</option>
+                                    <option value="3">High (4)</option>
+                                    <option value="4">Very High (5)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="timing_mode" class="form-label">Timing Mode</label>
+                                <select class="form-select" id="timing_mode" name="timing_mode" required>
+                                    <option value="1">Regular - Each chord starts on the beat</option>
+                                    <option value="2">Tight - Chords are precisely connected</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="chord_type" class="form-label">Chord Type</label>
+                                <select class="form-select" id="chord_type" name="chord_type" required>
+                                    <option value="1">Triads</option>
+                                    <option value="2">Seventh Chords</option>
+                                    <option value="3">Ninth Chords</option>
+                                    <option value="4">Eleventh Chords</option>
+                                    <option value="5">Thirteenth Chords</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="inversion" class="form-label">Inversion</label>
+                                <select class="form-select" id="inversion" name="inversion" required>
+                                    <option value="0">Root Position</option>
+                                    <option value="1">First Inversion</option>
+                                    <option value="2">Second Inversion</option>
+                                    <option value="3">Third Inversion</option>
+                                    <option value="4">Random Inversions</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="strum_in" class="form-label">Strum-in Pattern</label>
+                                <select class="form-select" id="strum_in" name="strum_in" required>
+                                    <option value="none">None</option>
+                                    <option value="down_slow">Down - Slow</option>
+                                    <option value="down_med">Down - Medium</option>
+                                    <option value="down_fast">Down - Fast</option>
+                                    <option value="up_slow">Up - Slow</option>
+                                    <option value="up_med">Up - Medium</option>
+                                    <option value="up_fast">Up - Fast</option>
+                                    <option value="alt_slow">Alternating - Slow</option>
+                                    <option value="alt_med">Alternating - Medium</option>
+                                    <option value="alt_fast">Alternating - Fast</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="strum_out" class="form-label">Strum-out Pattern</label>
+                                <select class="form-select" id="strum_out" name="strum_out" required>
+                                    <option value="none">None</option>
+                                    <option value="down_slow">Down - Slow</option>
+                                    <option value="down_med">Down - Medium</option>
+                                    <option value="down_fast">Down - Fast</option>
+                                    <option value="up_slow">Up - Slow</option>
+                                    <option value="up_med">Up - Medium</option>
+                                    <option value="up_fast">Up - Fast</option>
+                                    <option value="alt_slow">Alternating - Slow</option>
+                                    <option value="alt_med">Alternating - Medium</option>
+                                    <option value="alt_fast">Alternating - Fast</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Generate Chord Progression</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div id="result-section" style="display: none;">
+                    <div class="alert alert-success">
+                        <h4>🎵 Generation Complete!</h4>
+                        <p>Your MIDI file is ready. Click the button below to download:</p>
+                        <a id="download-link" href="#" class="btn btn-success">Download MIDI File</a>
+                    </div>
+                </div>
+                <div id="error-section" style="display: none;">
+                    <div class="alert alert-danger">
+                        <h4>❌ Error</h4>
+                        <p id="error-message"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-5 py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted">Created with ❤️ using JavaScript and Web MIDI API</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="static/js/app.js"></script>
+</body>
+</html> 
